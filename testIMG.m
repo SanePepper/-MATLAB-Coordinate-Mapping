@@ -1,6 +1,6 @@
 % Created on 29-May-2019 with reference to sample code provided
 %-------------------------------------------------------
-
+testing = false;
 % Define images to process
 imageFileNames = {'C:\Users\pwc02\Downloads\image184-ok\img184-000 (2).bmp',...
     'C:\Users\pwc02\Downloads\image184-ok\img184-000.bmp',...
@@ -50,9 +50,11 @@ worldPoints = generateCheckerboardPoints(boardSize, squareSize);
 
 % For example, you can use the calibration data to remove effects of lens distortion.
 [undistortedImage,Intrinsics] = undistortFisheyeImage(originalImage, cameraParams.Intrinsics);
-figure
-imshow(undistortedImage);
-title("Undistorted Image");
+if not(testing)
+    figure
+    imshow(undistortedImage);
+    title("Undistorted Image");
+end
 
 wholeImagePoints = zeros(imageSize,2,"uint8");
 for i = 1:imageSize
@@ -63,16 +65,22 @@ min1 = min(undistortedPoints(:,1));
 min2 = min(undistortedPoints(:,2)); 
 max1 = max(undistortedPoints(:,1)); 
 max2 = max(undistortedPoints(:,2));
-undistortedProjection = zeros(int32(max1-min1), int32(max2-min2));
+undistortedProjection = zeros(int32(max2-min2+1), int32(max1-min1+1), "uint8");
 for i = 1:imageSize
-   undistortedProjection(int32(undistortedPoints(i,1))-min1,int32(undistortedPoints(i,2))-min2) = originalImage(floor((i-1)/ncols)+1, mod((i-1),ncols)+1);
+   undistortedProjection(int32(undistortedPoints(i,2)-min2)+1,int32(undistortedPoints(i,1)-min1)+1) = originalImage(floor((i-1)/ncols)+1, mod((i-1),ncols)+1);
    %if undistortedPoints(i,1) >= 1 && undistortedPoints(i,1) >= ncols && undistortedPoints(i,2) >= 1 && undistortedPoints(i,2) <= mrows
    %    undistortedProjection(int32(undistortedPoints(i,2)),int32(undistortedPoints(i,1))) = originalImage(floor((i-1)/ncols)+1, mod((i-1),ncols)+1);
    %end
 end
-figure
-imshow(undistortedProjection);
-title("mapping from original image to undistorted image")
+if not(testing)
+    figure
+    undistortedProjection = insertMarker(undistortedProjection,[ncols-min1, mrows-min2]);
+    undistortedProjection = insertMarker(undistortedProjection,[ncols-min1, 1-min2]);
+    undistortedProjection = insertMarker(undistortedProjection,[1-min1, mrows-min2]);
+    undistortedProjection = insertMarker(undistortedProjection,[1-min1 1-min2]);
+    imshow(undistortedProjection);
+    title("mapping from original image to undistorted image")
+end
 originHeight = 0;
 [pitch, yaw, roll, height] = estimateMonoCameraParameters(cameraParams.Intrinsics,imagePoints(:,:,1), worldPoints, originHeight);
 %sensor = monoCamera(Intrinsics,height,'pitch',pitch,'yaw',yaw,'roll',roll);
@@ -85,42 +93,52 @@ outView = [bottomOffset,distAhead,-spaceToOneSide,spaceToOneSide];
 outImageSize = [NaN,mrows];
 birdsEye = birdsEyeView(sensor,outView,outImageSize);
 BEV = transformImage(birdsEye,undistortedImage);
-figure
-imshow(BEV)
-title('Bird''s-Eye-View Image')
+if not(testing)
+    figure
+    imshow(BEV)
+    title('Bird''s-Eye-View Image')
+end
 
 wholeWorldPoints = imageToVehicle(sensor,single(wholeImagePoints));
-wholeWorldPoints = int32(wholeWorldPoints);
+%wholeWorldPoints = int32(wholeWorldPoints);
 resultWorldIMG = zeros(200,500,"uint8");
 for i = 1:imageSize
     if wholeWorldPoints(i,1)>=1 && wholeWorldPoints(i,1)<=200 && wholeWorldPoints(i,2)>-250 && wholeWorldPoints(i,2)<=250
-        resultWorldIMG(200-wholeWorldPoints(i,1)+1,wholeWorldPoints(i,2)+250) = undistortedImage(floor((i-1)/ncols)+1, mod((i-1),ncols)+1);
+        resultWorldIMG(200-int32(wholeWorldPoints(i,1))+1,int32(wholeWorldPoints(i,2))+250) = undistortedImage(floor((i-1)/ncols)+1, mod((i-1),ncols)+1);
     end
 end 
-figure
-imshow(resultWorldIMG)
-title("Mapping from undistorted image");
+if not(testing)
+    figure
+    imshow(resultWorldIMG)
+    title("Mapping from undistorted image");
+end
 
 result = zeros(200, 500, "uint8");
 worldMapping = zeros(imageSize, 2, "single");
 for i = 1:imageSize
     if undistortedPoints(i,1) >= 1 && undistortedPoints(i,1) <= ncols && undistortedPoints(i,2) >= 1 && undistortedPoints(i,2) <= mrows
-        worldMapping(i,1:2) = wholeWorldPoints(int32(undistortedPoints(i,1)+(undistortedPoints(i,2)-1)*ncols),1:2); 
+        worldMapping(i,1:2) = wholeWorldPoints(int32(undistortedPoints(i,1))+int32(undistortedPoints(i,2)-1)*ncols,1:2); 
     else
         worldMapping(i,1:2) = NaN(1,2);
     end
 end
+disp(int32(undistortedPoints(19,1:2)));
+disp(int32(undistortedPoints(i,1))+int32(undistortedPoints(i,2)-1)*ncols);
+disp(int32(wholeWorldPoints(1118,1:2)));
+disp(int32(worldMapping(19,1:2)));
 for i = 1:imageSize
     if worldMapping(i,1)>=1 && worldMapping(i,1)<=200 && worldMapping(i,2)>-250 && worldMapping(i,2)<=250
         result(201-int32(worldMapping(i,1)), int32(worldMapping(i,2))+250) = originalImage(floor((i-1)/ncols)+1, mod((i-1),ncols)+1);
     end
 end
-figure
-imshow(result)
-title("result of coordinate mapping");
+if not(testing)
+    figure
+    imshow(result)
+    title("result of coordinate mapping");
+end
 
 fileID = fopen('C:\Users\pwc02\Desktop\ImageTest.txt','w');
 fprintf(fileID,'{');
-fprintf(fileID,'{%d,%d},',int32(worldMapping));
+fprintf(fileID,'{%d,%d},',worldMapping);
 fprintf(fileID,'}');
 fclose(fileID);
