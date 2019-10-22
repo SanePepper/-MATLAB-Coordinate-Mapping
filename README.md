@@ -7,24 +7,24 @@ Matlab with the Camera Calibrator App
 ```
 
 ### Demo
-![](https://github.com/SanePepper/-MATLAB-Coordinate-Mapping/blob/master/original.jpg)
+<img src="https://github.com/SanePepper/-MATLAB-Coordinate-Mapping/blob/master/original.jpg" width="184"/>
 
 Capture multiple images of an asymetric checkerboard from different angle.
 
-![](https://github.com/SanePepper/-MATLAB-Coordinate-Mapping/blob/master/fisheyefix.jpg)
+<img src="https://github.com/SanePepper/-MATLAB-Coordinate-Mapping/blob/master/fisheyefix.jpg" width="184"/>
 
 The program would fix the lens distortion.
 
-![](https://github.com/SanePepper/-MATLAB-Coordinate-Mapping/blob/master/birdeyeview.JPG)
+<img src="https://github.com/SanePepper/-MATLAB-Coordinate-Mapping/blob/master/birdeyeview.JPG" width="184"/>
 
 And use the first image as a reference of camera angle for performing perspective fix.
 
 The coordinate mapping would be saved as "mapping.txt" and can be applied on other images taken with the same lens and camera angle.
 
-![](https://github.com/SanePepper/-MATLAB-Coordinate-Mapping/blob/master/field.jpg)
+<img src="https://github.com/SanePepper/-MATLAB-Coordinate-Mapping/blob/master/field.jpg" width="184"/>
 
 Test image.
 
-![](https://github.com/SanePepper/-MATLAB-Coordinate-Mapping/blob/master/result.jpg)
+<img src="https://github.com/SanePepper/-MATLAB-Coordinate-Mapping/blob/master/result.jpg" width="500"/>
 
 Result of perspective fix and distortion fix.
